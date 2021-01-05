@@ -7,5 +7,3 @@ scripts:
     cmd: index.ts
 
     unstable: true
-    noCheck: true
-    tsconfig: tsconfig.json

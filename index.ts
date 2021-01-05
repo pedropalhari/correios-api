@@ -1,4 +1,3 @@
-/// <reference path="./lib.dom.d.ts" />
 import puppeteer from "https://deno.land/x/puppeteer@5.5.1/mod.ts";
 import { opine } from "https://deno.land/x/opine@1.0.2/mod.ts";
 
@@ -23,7 +22,20 @@ app.get("/:objectUUID", async (req, res) => {
   return res.json({ objectStatus });
 });
 
+const PORT = 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+});
+
 // console.log(await getInfo("ON214891784BR"));
+
+/**
+ * Polyfill de vagabundo porque Deno ainda não suporta direito o "DOM" do Typescript
+ */
+let document: any;
+type NodeListOf<T> = any;
+type HTMLSpanElement = any;
 
 async function getInfo(packageUUID: string) {
   const page = await browser.newPage();
@@ -42,7 +54,7 @@ async function getInfo(packageUUID: string) {
   let dates = await page.evaluate(() => {
     let dateArray = Array.from(
       document.querySelectorAll(".sroDtEvent") as NodeListOf<HTMLSpanElement>
-    ).map((x) => x.innerText);
+    ).map((x: any) => x.innerText);
 
     return dateArray;
   });
@@ -50,7 +62,7 @@ async function getInfo(packageUUID: string) {
   let events = await page.evaluate(() => {
     let eventArray = Array.from(
       document.querySelectorAll(".sroLbEvent") as NodeListOf<HTMLSpanElement>
-    ).map((x) => x.innerText);
+    ).map((x: any) => x.innerText);
 
     return eventArray;
   });
@@ -71,8 +83,8 @@ async function getInfo(packageUUID: string) {
   }
 
   let datesObject: IDate[] = dates.map((date) => {
-    let dateInfoArray = date.split("\n").map((d) => d.trim());
-    dateInfoArray = dateInfoArray.filter((d) => d != "");
+    let dateInfoArray = date.split("\n").map((d: string) => d.trim());
+    dateInfoArray = dateInfoArray.filter((d: string) => d != "");
     return {
       date: dateInfoArray[0],
       hour: dateInfoArray[1],
@@ -81,8 +93,8 @@ async function getInfo(packageUUID: string) {
   });
 
   let eventsObject: IEvent[] = events.map((event) => {
-    let eventInfoArray = event.split("\n").map((d) => d.trim());
-    eventInfoArray = eventInfoArray.filter((d) => d != "");
+    let eventInfoArray = event.split("\n").map((d: string) => d.trim());
+    eventInfoArray = eventInfoArray.filter((d: string) => d != "");
     return {
       status: eventInfoArray[0],
       info: eventInfoArray[1],
@@ -97,9 +109,3 @@ async function getInfo(packageUUID: string) {
 
   return fullObject;
 }
-
-const PORT = 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
-});
